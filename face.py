@@ -5,39 +5,47 @@ from cv2 import waitKey
 from cv2 import destroyAllWindows
 from cv2 import CascadeClassifier
 from cv2 import rectangle
-import urllib
+import urllib.request
 import os
 
-classifier = None
-
 class Face:
-
-    @staticmethod
-    def get_faces_bboxes(image_file):
+    classifier = None
+    @classmethod
+    def get_face_bboxes(cls, pixels):
         HAAR = "haarcascade_frontalface_default.xml"
-        global classifier
         if not os.path.isfile(HAAR):
+            print("downloading...")
             HAAR_URL="https://raw.githubusercontent.com/opencv/opencv/master/data/haarcascades/haarcascade_frontalface_default.xml"
-            urllib.URLopener().retrieve(HAAR, "haarcascade_frontalface_default.xml")
+            urllib.request.urlretrieve(HAAR_URL, "haarcascade_frontalface_default.xml")
             assert(os.path.isfile(HAAR)), "Failed to download %s" % HAAR_URL
-            classifier = CascadeClassifier(HAAR)
-        assert(classifier)
-        bboxes = classifier.detectMultiScale(HAAR)
-        # return [(b[0], b[1], b[0]+b[2], b[1]+b[3]) for b in bboxes]
+        if not cls.classifier:
+            cls.classifier = CascadeClassifier(HAAR)
+        bboxes = cls.classifier.detectMultiScale(pixels)
         return bboxes
 
+    @classmethod
+    def get_face_bboxes_from_file(cls, image_file):
+        pixels = imread(image_file)
+        return cls.get_face_bboxes(pixels)
+
+def main():
+    test_file = "images/test1.jpg"
+    pixels = imread(test_file)
+    bboxes = Face.get_face_bboxes(pixels)
+    print(bboxes)
+    for box in bboxes:
+        # extract
+        x, y, width, height = box
+        x2, y2 = x + width, y + height
         # draw a rectangle over the pixels
         rectangle(pixels, (x, y), (x2, y2), (0, 0, 255), 1)
+
     # show the image
-    imshow(pixels)
+    imshow('face detection', pixels)
     # keep the window open until we press a key
     waitKey(0)
     # close the window
     destroyAllWindows()
-
-
-def main():
-    pass
 
 if __name__ == "__main__":
     main()
