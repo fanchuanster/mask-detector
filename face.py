@@ -29,19 +29,17 @@ class Face:
         return cls.get_face_bboxes(pixels)
 
 def main():
-    test_file = "images/test1.jpg"
+    test_file = "images/test2.jpg"
     pixels = imread(test_file)
     bboxes = Face.get_face_bboxes(pixels)
     print(bboxes)
     for box in bboxes:
-        # extract
         x, y, width, height = box
         x2, y2 = x + width, y + height
-        # draw a rectangle over the pixels
         rectangle(pixels, (x, y), (x2, y2), (0, 0, 255), 1)
 
     # show the image
-    imshow('face detection', pixels)
+    imshow('faces', pixels)
     # keep the window open until we press a key
     waitKey(0)
     # close the window
