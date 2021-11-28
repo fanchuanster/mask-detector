@@ -1,6 +1,5 @@
 from __future__ import print_function, division
 
-import cv2
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -21,10 +20,10 @@ MEANS, STDS = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
 def imshow(inp, title=None):
     """Imshow for Tensor."""
     inp = inp.numpy().transpose((1, 2, 0))
-    mean = np.array([0.485, 0.456, 0.406])
-    std = np.array([0.229, 0.224, 0.225])
+    mean = np.array(MEANS)
+    std = np.array(STDS)
     inp = std * inp + mean
-    inp = np.clip(inp, 0, 1)
+    # inp = np.clip(inp, 0, 1)
     plt.imshow(inp)
     if title is not None:
         plt.title(title)
@@ -133,11 +132,11 @@ class FaceCrop(object):
     """
     def __call__(self, sample):
         bboxes = Face.get_face_bboxes_from_pil_image(sample)
-        if (len(bboxes) != 1):
-            print("len(bboxes) == %d" % len(bboxes))
+        if (len(bboxes) == 0):
             sample.format = "jpg"
-            sample.show()
+            # sample.show()
             return sample
+        bboxes = sorted(bboxes, key=lambda x: x[2] * x[3], reverse=True)
         box = bboxes[0]
         crop = sample.crop((box[0], box[1], box[0]+box[2], box[1]+box[3]))
         return crop
@@ -147,6 +146,7 @@ def main():
         'train': transforms.Compose([
             FaceCrop(),
             transforms.Resize(256),
+            transforms.CenterCrop(224),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize(MEANS, STDS)
@@ -154,7 +154,7 @@ def main():
         'val': transforms.Compose([
             FaceCrop(),
             transforms.Resize(256),
-            # transforms.CenterCrop(224),
+            transforms.CenterCrop(224),
             transforms.ToTensor(),
             transforms.Normalize(MEANS, STDS),
         ]),

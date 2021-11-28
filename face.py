@@ -8,6 +8,7 @@ from cv2 import rectangle
 import urllib.request
 import os
 import numpy as np
+import PIL.Image
 
 class Face:
     classifier = None
