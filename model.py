@@ -202,7 +202,7 @@ def main():
 
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
                            dataloaders, dataset_sizes, device,
-                           num_epochs=1)
+                           num_epochs=4)
     torch.save(model_ft.state_dict(), MODEL_FILE)
 
 if __name__ == "__main__":
