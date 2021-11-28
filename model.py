@@ -89,9 +89,7 @@ def train_model(model, criterion, optimizer, scheduler,
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
-
         print()
-
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
@@ -135,8 +133,6 @@ class FaceCrop(object):
     def __call__(self, sample):
         bboxes = Face.get_face_bboxes_from_pil_image(sample)
         if (len(bboxes) == 0):
-            sample.format = "jpg"
-            # sample.show()
             return sample
         bboxes = sorted(bboxes, key=lambda x: x[2] * x[3], reverse=True)
         box = bboxes[0]
@@ -152,23 +148,26 @@ def build_model(device=None):
     model_ft = model_ft.to(device)
     return model_ft
 
+def get_transformer():
+    return transforms.Compose([
+            FaceCrop(),
+            transforms.Resize(256),
+            transforms.CenterCrop(256),
+            transforms.ToTensor(),
+            transforms.Normalize(MEANS, STDS),
+        ])
+
 def main():
     data_transforms = {
         'train': transforms.Compose([
             FaceCrop(),
             transforms.Resize(256),
-            transforms.CenterCrop(224),
+            transforms.CenterCrop(256),
             transforms.RandomHorizontalFlip(),
             transforms.ToTensor(),
             transforms.Normalize(MEANS, STDS)
         ]),
-        'val': transforms.Compose([
-            FaceCrop(),
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(MEANS, STDS),
-        ]),
+        'val': get_transformer(),
     }
 
     data_dir = 'images/data'
