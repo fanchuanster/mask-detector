@@ -21,7 +21,11 @@ class Face:
             assert(os.path.isfile(HAAR)), "Failed to download %s" % HAAR_URL
         if not cls.classifier:
             cls.classifier = CascadeClassifier(HAAR)
-        bboxes = cls.classifier.detectMultiScale(pixels)
+        # bboxes = cls.classifier.detectMultiScale(pixels, scaleFactor=1.1)
+        gray = cv2.cvtColor(pixels, cv2.COLOR_BGR2GRAY)
+        bboxes = cls.classifier.detectMultiScale(gray,
+                                                 scaleFactor = 1.1,
+                                                 minSize = (36, 36))
         return bboxes
 
     @classmethod

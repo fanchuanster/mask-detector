@@ -3,6 +3,7 @@ from PIL import Image
 from model import MODEL_FILE, get_transformer, build_model
 import torch
 import cv2
+from cv2 import rectangle
 from face import Face
 
 model = build_model()
@@ -22,7 +23,6 @@ def predict(transformed_image):
     output = model(transformed_image)
     _, predicted = torch.max(output, 1)
     classification = predicted.data[0]
-    print("classification", classification)
     index = int(classification)
     return index
 
@@ -37,16 +37,23 @@ while(True):
     height,width = frame.shape[:2]
     transformed_image = preprocess(frame)
     label = predict(transformed_image)
-    print(label)
+
+    bboxes = Face.get_face_bboxes(frame)
+    # print(bboxes)
+    for box in bboxes:
+        x, y, width, height = box
+        x2, y2 = x + width, y + height
+        rectangle(frame, (x, y), (x2, y2), (0, 0, 255), 1)
+    box = bboxes[0] if len(bboxes) > 0 else None
 
     if(label == 1):
-        label = "masked"
+        label = "Masked"
     else:
-        label = "no mask"
-    cv2.putText(frame, label, (100, height - 20),
+        label = "No mask"
+    cv2.putText(frame, label, (100, height - 20) if box is None else box[2:],
                 font, 1,
-                (255, 0, 0) if label == 0 else (0, 255, 255),
-                1,cv2.LINE_AA)
+                (255, 0, 0) if label != "Masked" else (0, 255, 0),
+                1, cv2.LINE_AA)
     cv2.imshow('video',frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
