@@ -15,6 +15,8 @@ from face import Face
 
 plt.ion()   # interactive mode
 
+MODEL_FILE = "face-mask.model"
+
 MEANS, STDS = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
 
 def imshow(inp, title=None):
@@ -141,6 +143,15 @@ class FaceCrop(object):
         crop = sample.crop((box[0], box[1], box[0]+box[2], box[1]+box[3]))
         return crop
 
+def build_model(device=None):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") if not device else device
+    model_ft = models.resnet18(pretrained=True)
+    num_ftrs = model_ft.fc.in_features
+    # should use len(class_names) to optimize.
+    model_ft.fc = nn.Linear(num_ftrs, 2)
+    model_ft = model_ft.to(device)
+    return model_ft
+
 def main():
     data_transforms = {
         'train': transforms.Compose([
@@ -178,14 +189,9 @@ def main():
     # Make a grid from batch
     out = torchvision.utils.make_grid(inputs)
 
+    model_ft = build_model(device)
+
     imshow(out, title=[class_names[x] for x in classes])
-
-    model_ft = models.resnet18(pretrained=True)
-    num_ftrs = model_ft.fc.in_features
-
-    model_ft.fc = nn.Linear(num_ftrs, len(class_names))
-
-    model_ft = model_ft.to(device)
 
     criterion = nn.CrossEntropyLoss()
 
@@ -198,6 +204,7 @@ def main():
     model_ft = train_model(model_ft, criterion, optimizer_ft, exp_lr_scheduler,
                            dataloaders, dataset_sizes, device,
                            num_epochs=1)
+    torch.save(model_ft.state_dict(), MODEL_FILE)
 
 if __name__ == "__main__":
     main()
