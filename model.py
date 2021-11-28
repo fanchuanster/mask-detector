@@ -23,7 +23,7 @@ def imshow(inp, title=None):
     mean = np.array(MEANS)
     std = np.array(STDS)
     inp = std * inp + mean
-    # inp = np.clip(inp, 0, 1)
+    inp = np.clip(inp, 0, 1)
     plt.imshow(inp)
     if title is not None:
         plt.title(title)
