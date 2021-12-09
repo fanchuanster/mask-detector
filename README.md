@@ -10,3 +10,5 @@ Use OpenCV to capture video frames and predict whether the human in the video is
 1. preprocess the dataset cropping face using OpenCV's facial detection feature.
 2. build transfer learning model based of RestNet18 and train it.
 3. Capture video with OpenCV and crop human face in the video frame, and predict whether masked or not.
+
+Dev Env - anaconda, PyCharm
